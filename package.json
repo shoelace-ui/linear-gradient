@@ -1,0 +1,11 @@
+{
+  "name" : "shoelace-ui-linear-gradient",
+  "version" : "0.0.1",
+  "description" : "`linear-gradient` function",
+  "repository" : "https://github.com/shoelace-ui/linear-gradient.git",
+  "keywords" : ["stylus", "shoelace", "linear", "gradient", "linear-gradient"],
+  "author" : "Michael Andrew Vanasse <mail@mndvns.com>",
+  "license" : "MIT",
+  "dependencies": {
+  }
+}

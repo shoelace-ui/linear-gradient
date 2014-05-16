@@ -1,0 +1,104 @@
+/*
+ * Implicit color stop position.
+ * @private
+ */
+
+linear-gradient--pos-in-stops(i, stops)
+  len = length(stops)
+  if len - 1 == i
+    100%
+  else if i
+    unit(i / len * 100, '%')
+  else
+    0
+
+/*
+ * Normalize color stops:
+ *
+ *   - (color pos) -> (pos color)
+ *   - (color) -> (implied-pos color)
+ *
+ * @private
+ */
+
+linear-gradient--normalize-stops(stops)
+  stops = clone(stops)
+  for stop, i in stops
+    if length(stop) == 1
+      color = stop[0]
+      stop[0] = linear-gradient--pos-in-stops(i, stops)
+      stop[1] = color
+    else if typeof(stop[1]) == 'unit'
+      pos = stop[1]
+      stop[1] = stop[0]
+      stop[0] = pos
+  stops
+
+/*
+ * Join color stops with the given translation function.
+ * @private
+ */
+
+linear-gradient--join-stops(stops, translate)
+  str = ''
+  len = length(stops)
+  for stop, i in stops
+    str += ', ' if i
+    pos = stop[0]
+    color = stop[1]
+    str += translate(color, pos)
+  unquote(str)
+
+/*
+ * Standard color stop.
+ * @private
+ */
+
+linear-gradient--std-stop(color, pos)
+  '%s %s' % (color pos)
+
+/*
+ * Create a linear gradient with the given start position
+ * and variable number of color stops.
+ *
+ * Example:
+ *
+ *  ```stylus
+ *  ex 1
+ *    background: linear-gradient(top, red, green, blue)
+ *
+ *  ex 2
+ *    background: linear-gradient(bottom, red, green 50%, blue)
+ *
+ *  ex 3
+ *    background: linear-gradient(bottom, red, 50% green, blue)
+ *
+ *  ex 4
+ *    background: linear-gradient(bottom, red, 50% green, 90% white, blue)
+ * ```
+ *
+ * @function
+ */
+
+linear-gradient(start, stops...)
+  error('color stops required') unless length(stops)
+  prop = current-property[0]
+  val = unquote('linear-gradient(' + join(', ',arguments) + ')')
+  return val
+
+/*
+ * Create a linear gradient image with the given start position
+ * and variable number of color stops.
+ * @function
+ */
+
+linear-gradient-image(start, stops...)
+  error('node-canvas is required for linear-gradient-image()') unless has-canvas
+  stops = stops[0] if length(stops) == 1
+  error('gradient image size required') unless start[0] is a 'unit'
+  size = start[0]
+  start = start[1] or 'top'
+  grad = create-gradient-image(size, start)
+  stops = linear-gradient--normalize-stops(stops)
+  add-color-stop(grad, stop[0], stop[1]) for stop in stops
+  'url(%s)' % gradient-data-uri(grad)
